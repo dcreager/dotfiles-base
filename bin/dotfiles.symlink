@@ -34,7 +34,7 @@ install () {
         return
     fi
 
-    if [ -f "$LINK" ]; then
+    if [ -e "$LINK" ]; then
         echo "[collide] $BASE_REST"
         return
     fi
@@ -62,7 +62,7 @@ uninstall () {
         return
     fi
 
-    if [ -f "$LINK" ]; then
+    if [ -e "$LINK" ]; then
         echo "[collide] $BASE_REST"
         return
     fi
