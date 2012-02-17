@@ -1,0 +1,69 @@
+#!/bin/sh
+
+list () {
+    echo "$BASE_REST"
+    echo "  -> $TARGET"
+}
+
+install () {
+    if [ -h "$LINK" ]; then
+        # The target is already symlinked.
+        return
+    fi
+
+    if [ -f "$LINK" ]; then
+        echo "[collide] $BASE_REST"
+        return
+    fi
+
+    echo "[link]    $BASE_REST"
+    mkdir -p "$LINK_DIR"
+    ln -s "$TARGET" "$LINK"
+}
+
+uninstall () {
+    if [ -h "$LINK" ]; then
+        echo "[unlink]  $BASE_REST"
+        rm "$LINK"
+        return
+    fi
+
+    if [ -f "$LINK" ]; then
+        echo "[collide] $BASE_REST"
+        return
+    fi
+}
+
+COMMAND="$1"
+if [ -z "$COMMAND" ]; then
+    echo "Usage: go [command]"
+    exit 1
+fi
+
+case "$COMMAND" in
+    list)           true;;
+    install)        true;;
+    uninstall)      true;;
+    *) echo "Unknown command $COMMAND"
+       exit 1
+       ;;
+esac
+
+find "$HOME"/.dotfiles* -name '*.symlink' | while read TARGET; do
+    # For $HOME/dir1/dir2/file.symlink
+    #   WITHIN_HOME:  dir1/dir2/file.symlink
+    #   SECTION:      dir1
+    #   REST:         dir2/file.symlink
+    #   BASE_REST:    dir2/file
+    #   LINK:         $HOME/dir2/file
+    #   LINK_DIR:     $HOME/dir2
+
+    WITHIN_HOME=`echo "$TARGET" | sed -e 's|^'"$HOME"'/||'`
+    SECTION=`echo "$WITHIN_HOME" | sed -e 's|/.*||'`
+    REST=`echo "$WITHIN_HOME" | sed -e 's|[^/]*/||'`
+    BASE_REST=`echo "$REST" | sed -e 's|.symlink$||'`
+    LINK="$HOME/$BASE_REST"
+    LINK_DIR=`echo "$LINK" | sed -e 's|/[^/]*$||'`
+
+    $COMMAND
+done
