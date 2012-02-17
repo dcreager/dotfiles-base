@@ -25,6 +25,9 @@ uninstall () {
     if [ -h "$LINK" ]; then
         echo "[unlink]  $BASE_REST"
         rm "$LINK"
+        # Try to remove the containing directory.  This will fail if
+        # there's other stuff there, and that's totally fine.
+        rmdir "$LINK_DIR" >/dev/null 2>&1
         return
     fi
 
