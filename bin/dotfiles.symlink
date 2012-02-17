@@ -1,5 +1,28 @@
 #!/bin/sh
 
+walk () {
+    COMMAND="$1"
+
+    find "$HOME"/.dotfiles* -name '*.symlink' | while read TARGET; do
+        # For $HOME/dir1/dir2/file.symlink
+        #   WITHIN_HOME:  dir1/dir2/file.symlink
+        #   SECTION:      dir1
+        #   REST:         dir2/file.symlink
+        #   BASE_REST:    dir2/file
+        #   LINK:         $HOME/dir2/file
+        #   LINK_DIR:     $HOME/dir2
+
+        WITHIN_HOME=`echo "$TARGET" | sed -e 's|^'"$HOME"'/||'`
+        SECTION=`echo "$WITHIN_HOME" | sed -e 's|/.*||'`
+        REST=`echo "$WITHIN_HOME" | sed -e 's|[^/]*/||'`
+        BASE_REST=`echo "$REST" | sed -e 's|.symlink$||'`
+        LINK="$HOME/$BASE_REST"
+        LINK_DIR=`echo "$LINK" | sed -e 's|/[^/]*$||'`
+
+        $COMMAND
+    done
+}
+
 list () {
     echo "$BASE_REST"
     echo "  -> $TARGET"
@@ -37,6 +60,19 @@ uninstall () {
     fi
 }
 
+clean () {
+    find $HOME -type l | while read LINK; do
+        BASE_REST=`echo "$LINK" | sed -e 's|^'"$HOME"'/||'`
+        TARGET=`readlink "$LINK"`
+        if echo "$TARGET" | grep "^$HOME/\\.dotfiles" > /dev/null; then
+            if [ ! -e "$TARGET" ]; then
+                echo "[clean]   $BASE_REST"
+                rm "$LINK"
+            fi
+        fi
+    done
+}
+
 COMMAND="$1"
 if [ -z "$COMMAND" ]; then
     echo "Usage: go [command]"
@@ -44,29 +80,11 @@ if [ -z "$COMMAND" ]; then
 fi
 
 case "$COMMAND" in
-    list)           true;;
-    install)        true;;
-    uninstall)      true;;
+    list)           walk list;;
+    install)        walk install;;
+    uninstall)      walk uninstall;;
+    clean)          clean;;
     *) echo "Unknown command $COMMAND"
        exit 1
        ;;
 esac
-
-find "$HOME"/.dotfiles* -name '*.symlink' | while read TARGET; do
-    # For $HOME/dir1/dir2/file.symlink
-    #   WITHIN_HOME:  dir1/dir2/file.symlink
-    #   SECTION:      dir1
-    #   REST:         dir2/file.symlink
-    #   BASE_REST:    dir2/file
-    #   LINK:         $HOME/dir2/file
-    #   LINK_DIR:     $HOME/dir2
-
-    WITHIN_HOME=`echo "$TARGET" | sed -e 's|^'"$HOME"'/||'`
-    SECTION=`echo "$WITHIN_HOME" | sed -e 's|/.*||'`
-    REST=`echo "$WITHIN_HOME" | sed -e 's|[^/]*/||'`
-    BASE_REST=`echo "$REST" | sed -e 's|.symlink$||'`
-    LINK="$HOME/$BASE_REST"
-    LINK_DIR=`echo "$LINK" | sed -e 's|/[^/]*$||'`
-
-    $COMMAND
-done
