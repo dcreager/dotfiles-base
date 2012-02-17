@@ -46,6 +46,14 @@ install () {
 
 uninstall () {
     if [ -h "$LINK" ]; then
+        # As a special case, don't uninstall the dotfiles script itself
+        # unless you really ask for it by setting FULL=1.
+        if [ "$BASE_REST" = "bin/dotfiles" ]; then
+            if [ x$FULL != x1 ]; then
+                return
+            fi
+        fi
+
         echo "[unlink]  $BASE_REST"
         rm "$LINK"
         # Try to remove the containing directory.  This will fail if
