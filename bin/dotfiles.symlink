@@ -3,7 +3,9 @@
 walk () {
     COMMAND="$1"
 
-    find "$HOME"/.dotfiles* -name '*.symlink' | while read TARGET; do
+    find "$HOME"/.dotfiles* \
+        -path '*/.git' -prune -o \
+        -name '*.symlink' -print | while read TARGET; do
         # For $HOME/dir1/dir2/file.symlink
         #   WITHIN_HOME:  dir1/dir2/file.symlink
         #   SECTION:      dir1
