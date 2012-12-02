@@ -85,7 +85,10 @@ clean () {
 
 COMMAND="$1"
 if [ -z "$COMMAND" ]; then
-    echo "Usage: go [command]"
+    echo "Usage: dotfiles install"
+    echo "       dotfiles uninstall"
+    echo "       dotfiles list"
+    echo "       dotfiles clean"
     exit 1
 fi
 
