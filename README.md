@@ -28,7 +28,7 @@ Instead, the approach that I take is:
 
 This repository contains a `dotfiles` script that takes care of
 installing and removing these symlinks for you.  The intention is that
-it will be one (several) dotfile repositories that `dotfiles` will
+it will be one (of several) dotfile repositories that `dotfiles` will
 manage.  (That way the `dotfiles` script in this repository will be
 symlinked into `$HOME/bin` for you.)
 
